@@ -73,7 +73,7 @@ function SignUp() {
       <div className="connect">
         <h1>CONNECT</h1>
         <div className="input-container">
-          <input type="text" placeholder="User" className="signup-user" />
+          <input type="email" placeholder="Email Address" className="signup-user" />
           {/* <input type="text" placeholder="Password" name="password" /> */}
           <button onClick={handleClick}>Submit</button>
         </div>
