@@ -58,7 +58,7 @@ mongoose.connection.once("open", function () {
 
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: "https://connect-1024.herokuapp.com/home",
         credentials: true,
     })
 );
