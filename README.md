@@ -1,7 +1,15 @@
 # Connect
 
-**Problem Statement 
-**WEB DEV 
+# Hosted Site: https://connect-1024.herokuapp.com/
+
+How to Run Locally: 
+
+        git clone
+        npm start in the front-end of the Connect folder
+        nodemon index.js in the back-end of the Connect folder
+       
+#Problem Statement 
+#WEB DEV 
  Elan & Nvision 2021
 
 
