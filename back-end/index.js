@@ -2,23 +2,60 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-
-const bcrypt = require("bcrypt");
 const app = express();
+const http = require("http");
+const server = http.createServer(app);
+options = {
+    cors: true,
+    origins: ["http://127.0.0.1:3000"],
+};
+const socketIo = require("socket.io");
+const bcrypt = require("bcrypt");
+const io = socketIo(server, options);
 app.use(express.static("public"));
 app.use(express.json());
-app.set("port", 3001);
+app.set("port", process.env.PORT);
 app.use(cors());
-mongoose
-    .connect(
-        "mongodb+srv://admin-Pentavalent:Nosotroscinco@cluster0.vuo1v.mongodb.net/Elan?retryWrites=true&w=majority",
-        {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        }
-    )
-    .then(() => console.log("Connected to MongoDB..."))
-    .catch((err) => console.error("Coudn't connect MongoDB....", err));
+io.on("connection", (socket) => {
+    console.log("New client connected");
+    const changeStream = Channel.watch();
+    changeStream.on("change", function (change) {
+        console.log("Channel COLLECTION CHANGED");
+        Channel.find({}, (err, data) => {
+            if (err) throw err;
+            if (data) {
+                // RESEND ALL USERS
+                socket.emit("new-message", data);
+            }
+        });
+    });
+});
+// socket.on("new-message-stored", (data) => {
+//   Channel.findOne({ _id: data }, (err, data) => {
+//     if (err) throw err;
+//     if (data) {
+//       console.log(data);
+//       socket.emit("new-message", data);
+//     }
+//   });
+// });
+
+mongoose.connect(
+    "mongodb+srv://admin-Pentavalent:Nosotroscinco@cluster0.vuo1v.mongodb.net/Elan?retryWrites=true&w=majority",
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    }
+);
+
+mongoose.connection.on("error", function (error) {
+    console.error("Database connection error:", error);
+});
+
+mongoose.connection.once("open", function () {
+    console.log("Database connected");
+});
+
 app.use(
     cors({
         origin: "http://localhost:3000",
@@ -38,10 +75,34 @@ var transporter = nodemailer.createTransport({
         ciphers: "SSLv3",
     },
 });
+const messageSchema = mongoose.Schema({
+    message: String,
+    name: String,
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+    received: Boolean,
+});
+const Message = new mongoose.model("Message", messageSchema);
+const channelSchema = new mongoose.Schema({
+    channel_name: String,
+    channel_theme: [],
+    channel_code: String,
+    channel_users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    channel_admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    channel_desc: String,
+    channel_requests: [],
+    channel_images: [],
+    private: Boolean,
+    channel_message: [messageSchema],
+});
+const Channel = new mongoose.model("Channel", channelSchema);
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     name: String,
+    channels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Channel" }],
 });
 const User = new mongoose.model("User", userSchema);
 const verifySchema = new mongoose.Schema({
@@ -54,6 +115,7 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Headers", "*");
     next();
 });
+
 // function createAdmin(email, password, req, res) {
 //   console.log("Vandhutten");
 //   const user = new User({
@@ -85,9 +147,16 @@ app.use((req, res, next) => {
 //     }
 //   });
 // }
+function randomString(length, chars) {
+    var result = "";
+    for (var i = length; i > 0; --i)
+        result += chars[Math.round(Math.random() * (chars.length - 1))];
+    return result;
+}
 app.post("/signup", (req, res) => {
     console.log(req.body);
     const email = req.body.email;
+    const name = req.body.username;
     const pass = req.body.password;
     if (email && pass) {
         bcrypt.genSalt(10, function (err, salt) {
@@ -97,9 +166,10 @@ app.post("/signup", (req, res) => {
                     const user = new User({
                         email: email,
                         password: hash,
+                        name: name,
                     });
                     user.save();
-                    res.send(307, "/login?admin=" + true + "&password=" + hash);
+                    res.status(200).send("/login?admin=" + true + "&password=" + hash);
                 } else res.send("error in hash gen");
             });
         });
@@ -108,6 +178,38 @@ app.post("/signup", (req, res) => {
             message: "Problem in signing up",
         });
 });
+app.post("/new-channel", (req, res) => {
+    console.log(req.body);
+    var random = randomString(
+        6,
+        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    );
+    const channel = new Channel({
+        channel_name: req.body.channel_name,
+        channel_theme: req.body.channel_theme,
+        channel_code: random,
+        private: req.body.private,
+        channel_admin: req.body.user_id,
+        channel_desc: req.body.channel_desc,
+        channel_images: req.body.images,
+    });
+    console.log(channel.channel_images);
+    channel.channel_users.push(req.body.user_id);
+    channel.save(function (err) {
+        if (err) console.log("Error in adding new item");
+        else {
+            User.findOne({ _id: req.body.user_id }, (err, user) => {
+                if (err) console.log("Error in finding user id from user");
+                else {
+                    user.channels.push(channel._id);
+                    user.save();
+                    res.send("saved");
+                }
+            });
+        }
+    });
+});
+
 app.post("/verify", (req, res) => {
     Verify.deleteMany({ email: req.body.email }, (err) => {
         if (err) {
@@ -143,6 +245,7 @@ app.post("/verify", (req, res) => {
             console.log(error);
         } else {
             console.log("Email sent: " + info.response);
+            res.status(200).send("Mail Sent");
         }
     });
 });
@@ -150,19 +253,221 @@ app.post("/otp-verify", (req, res) => {
     Verify.findOne({ email: req.body.email }, (err, found) => {
         if (!err) {
             if (found.otp == req.body.otp) {
-                res.status(200).send("verified machi");
+                res.status(200).send("Correct");
             } else {
-                res.send("OTP incorrect");
+                res.status(403).send("OTP incorrect");
             }
         } else {
             res.send("Email not found");
         }
     });
 });
+app.post("/login", (req, res) => {
+    console.log(req.body);
+    const email = req.body.email;
+    const pass = req.body.password;
+    if (email && pass) {
+        bcrypt.genSalt(10, function (err, salt) {
+            bcrypt.hash(pass, salt, function (err, hash) {
+                if (!err) {
+                    console.log("Hi");
+                    User.findOne({ email: req.body.email }, (err, found) => {
+                        if (!err) {
+                            if (found) {
+                                console.log("found");
+
+                                bcrypt.compare(pass, found.password, function (err, result) {
+                                    if (!err) {
+                                        if (result == true) {
+                                            res.status(200).send("Login");
+                                        } else {
+                                            res.send("Wrong Pwd");
+                                        }
+                                    }
+                                });
+                            } else {
+                                res.send("SignUp");
+                            }
+                        } else {
+                            console.log(err);
+                        }
+                    });
+                } else res.send("error in hash gen");
+            });
+        });
+    }
+});
+function Storing(foundChannel, found) {
+    console.log("Save panniten");
+}
+app.post("/set-channel", (req, res) => {
+    console.log(req.body);
+    User.findOne({ email: req.body.email }, (err, found) => {
+        if (!err) {
+            if (found) {
+                Channel.findOne({ _id: req.body.pref }, async (err, foundChannel) => {
+                    if (!err) {
+                        if (foundChannel) {
+                            var index = foundChannel.channel_requests.indexOf(found._id);
+                            console.log(index);
+                            foundChannel.channel_requests.splice(index, 1);
+                            foundChannel.channel_users.push(found._id);
+                            found.channels.push(foundChannel._id);
+                            await foundChannel
+                                .save()
+                                .then(() => {
+                                    console.log("Saved");
+                                })
+                                .catch((error) => {
+                                    console.log(error);
+                                });
+                            await found
+                                .save()
+                                .then(() => {
+                                    console.log("Saved User");
+                                })
+                                .catch((error) => {
+                                    console.log(error);
+                                });
+                        }
+                    }
+                });
+            }
+        }
+    });
+    res.send(req.body);
+});
+app.post("/set-pref", (req, res) => {
+    console.log(req.body);
+    User.findOne({ email: req.body.email }, (err, found) => {
+        if (!err) {
+            if (found) {
+                Channel.findOne(
+                    { channel_name: req.body.pref },
+                    async (err, foundChannel) => {
+                        if (!err) {
+                            if (foundChannel) {
+                                var index = foundChannel.channel_requests.indexOf(found._id);
+                                console.log(index);
+                                foundChannel.channel_requests.splice(index, 1);
+                                foundChannel.channel_users.push(found._id);
+                                found.channels.push(foundChannel._id);
+                                await foundChannel
+                                    .save()
+                                    .then(() => {
+                                        console.log("Saved");
+                                    })
+                                    .catch((error) => {
+                                        console.log(error);
+                                    });
+                                await found
+                                    .save()
+                                    .then(() => {
+                                        console.log("Saved User");
+                                    })
+                                    .catch((error) => {
+                                        console.log(error);
+                                    });
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    });
+    res.send(req.body);
+});
+
+app.post("/channels", (req, res) => {
+    Channel.find({}, (err, foundChannels) => {
+        if (!err) {
+            if (foundChannels) {
+                res.send(foundChannels);
+            }
+        }
+    });
+});
+
+app.post("/channel-info", (req, res) => {
+    console.log(req.body);
+    Channel.findOne({ _id: req.body.id })
+        .select("-password -_id -__v -channels")
+        .populate("channel_users", "-password -_id -__v -channels")
+        .exec(function (err, found) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(found);
+            }
+        });
+});
+
+app.post("/all-channels", (req, res) => {
+    Channel.findOne({ _id: req.body.id })
+        .select("-password -_id -__v -channels")
+        .populate("channel_users", "-password -_id -__v -channels")
+        .exec(function (err, found) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(found);
+            }
+        });
+});
+app.post("/channel_newMessage", (req, res) => {
+    console.log(req.body);
+    Channel.findOne({ _id: req.body.id }, (err, foundChannel) => {
+        if (!err) {
+            if (foundChannel) {
+                console.log("Hello");
+                const message = {
+                    message: req.body.message,
+                    name: req.body.name,
+                };
+                foundChannel.channel_message.push(message);
+                foundChannel.save();
+                res.send("Save pannite");
+            }
+        }
+    });
+});
+app.post("/handleRequest", (req, res) => {
+    console.log(req.body);
+    Channel.findOne({ _id: req.body.channel_id }, (err, found) => {
+        if (!err) {
+            if (found) {
+                const obj = {
+                    id: req.body.user_id,
+                    name: req.body.user_name,
+                    email: req.body.user_email,
+                };
+                found.channel_requests.push(obj);
+                found.save();
+                console.log("Inga dhaan");
+                res.send("Pending");
+            }
+        }
+    });
+});
+
+app.post("/chat", (req, res) => {
+    console.log(req.body);
+
+    const email = req.body.email;
+    User.findOne({ email: email })
+        .populate("channels")
+        .exec(function (err, found) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(found);
+            }
+        });
+});
 
 app.get("/", (req, res) => {
     res.send("object");
 });
-app.listen(app.get("port"), function () {
+server.listen(app.get("port"), function () {
     console.log(`App started on port ${app.get("port")}`);
 });

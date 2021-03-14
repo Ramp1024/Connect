@@ -1,0 +1,87 @@
+.full-signUp{
+    width: 100vw;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+
+hr {
+    border-top: 2px solid black !important;
+}
+
+.stepper-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.MuiStepLabel-labelContainer{
+    width: fit-content !important;
+    height: fit-content !important;
+}
+
+.MuiStep-root{
+    padding: 10px;
+}
+
+.MuiStepLabel-root{
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.connect{
+    margin-top: 10vh !important;
+    width: fit-content;
+    border-radius: 10px;
+    box-shadow: -2px 1px 10px 10px rgb(179, 179, 179);
+    margin: auto;
+    padding: 5vh;
+}
+
+.input-container{
+    margin-top: 5vh !important;
+    display: flex;
+    padding: 50px;
+    flex-direction: column;
+    width: fit-content;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+}
+
+.signup-user{
+    margin-bottom: 10px;
+}
+
+.signup-user , .signup-password{
+    border-radius: 5px;
+}
+
+.login-signUp{
+    cursor: pointer;
+    color: red;
+    font-weight: 750;
+}
+
+.input-container > button{
+    margin: 2vh;
+    width: fit-content;
+}
+
+.input-formFields{
+    margin-top: 5vh;
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.input-formFields > input{
+    margin-top: 15px;
+}
+
+.input-formFields > button{
+    width: fit-content;
+    margin: 2vh;
+}
