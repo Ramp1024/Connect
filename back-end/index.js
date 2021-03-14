@@ -7,7 +7,7 @@ const http = require("http");
 const server = http.createServer(app);
 options = {
     cors: true,
-    origins: ["http://127.0.0.1:3000"],
+    origins: ["https://connect-1024.herokuapp.com"],
 };
 const socketIo = require("socket.io");
 const bcrypt = require("bcrypt");
