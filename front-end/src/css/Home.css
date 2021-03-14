@@ -91,8 +91,8 @@
 }
 
 .right-footer > p{
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 900;
   letter-spacing: 2px;
 }
 
@@ -125,3 +125,17 @@
   margin-top: 5%;
 }
 
+#cloudIcon{
+  font-size: 35px !important;
+}
+
+.uploadbut{
+  border-radius: 10px;
+  background-color: royalblue;
+  padding: 10px;
+  color: white;
+}
+
+.fileUpload > p{
+  margin-left: 2%;
+}

@@ -72,7 +72,7 @@ import socketIOClient from "socket.io-client";
 import axios from "../Axios";
 import { Howl, Howler } from "howler";
 
-const ENDPOINT = "http://localhost:3001";
+const ENDPOINT = "https://ancient-tor-83813.herokuapp.com";
 function LeftComponent() {
   const [{ user, clickedChannel }, dispatch] = useStateValue();
 

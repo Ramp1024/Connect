@@ -193,7 +193,7 @@ import { Howl } from "howler";
 import "../css/Center.css";
 import socketIOClient from "socket.io-client";
 // import { useAudioPlayer } from "react-use-audio-player";
-const ENDPOINT = "http://localhost:3001";
+const ENDPOINT = "https://ancient-tor-83813.herokuapp.com";
 
 function CenterComponent() {
   var x = document.cookie;

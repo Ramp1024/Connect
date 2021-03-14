@@ -503,7 +503,7 @@ function RightComponent({ user }) {
       </div>
 
       <div className="right-footer">
-        <p>Developed by Ram&Roshan</p>
+        <p>RR&H</p>
       </div>
 
       {modal ? (
@@ -540,13 +540,14 @@ function RightComponent({ user }) {
             <div>
               <div className="filecont">
                 <div className="fileUpload" onChange={handleChange}>
-                  <button id="cloudIcon">Upload</button>
+                  {/* <button id="cloudIcon">Upload</button> */}
                   {/* <CloudUploadIcon id="cloudIcon" /> */}
                   <input id="upload" type="file" hidden multiple />
                   <label htmlFor="upload" className=" uploadbut">
                     {" "}
-                  Upload Channel Theme Music and/or Channel Dp{" "}
+                  Upload
                   </label>
+                  <p>Channel Theme Music and/or Channel Dp{" "}</p>
                   {/* {post == "0" ? ( */}
                   <div className="uploadContainer">
                     {images?.map((item) => {

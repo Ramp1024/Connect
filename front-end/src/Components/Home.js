@@ -7,7 +7,7 @@ import RightComponent from "./RightComponent";
 import CenterComponent from "./CenterComponent";
 import socketIOClient from "socket.io-client";
 
-const ENDPOINT = "http://localhost:3001";
+const ENDPOINT = "https://ancient-tor-83813.herokuapp.com";
 function Home() {
   const [{ channels, user }, dispatch] = useStateValue();
   const [userData, setuserData] = useState("");
