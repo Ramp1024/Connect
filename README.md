@@ -37,6 +37,12 @@ NOTE: The site is not fully responsive.. In order to get the complete experience
    -> Public channels are accessible by all.
    -> But in the case of Private Channels, the channel Admin has exclusive rights to control the privacy of the channel.
    -> In order for a user to join a private channel, his request must be accepted by the channel admin.
+   
+ # -> Content Restriction:
+   
+   -> Certain words have been restricted from use in this webapp.
+   -> Words that are restricted are: Murder, Blood, F***, Bi***.
+   -> More words could be restricted but we wanted to keep the code clean.
   
 
 # Problem Statement 
