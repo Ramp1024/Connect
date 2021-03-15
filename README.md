@@ -21,7 +21,7 @@ in the back-end of the Connect folder
 NOTE: The site is not fully responsive.. In order to get the complete experience of using this site, we recommend viewing this in Laptops/Computers.
       Loading on button click might be slow due to internet connectivity problems..Make sure you click once and wait patiently until it loads.
 
-# INSTRUCTIONS
+# INSTRUCTIONS:
 
    -> This site can be used anonymously and also by Signing Up using an email address.
  
